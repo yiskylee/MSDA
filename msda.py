@@ -22,9 +22,10 @@
 #
 
 import sys
-from os import listdir
-import csv
-from rpy2.robjects import r
+import os
+#from os import listdir
+#import csv
+#from rpy2.robjects import r
 import subprocess
 
 def main():
@@ -37,22 +38,28 @@ def main():
         print "Too many arguments."
         sys.exit()
 
-    folderName = sys.argv[1]
-    print folderName
+    file_dir = sys.argv[1]
+#    print file_dir
 
-    filenames = find_files(folderName, suffix = ".csv")
-    for name in filenames:
-        print name
+    for root, dirs, files in os.walk(file_dir, topdown=False):
+        for name in files:
+            if name.endswith(".csv"):
+                file_name = os.path.join(root, name)
+                rscript = "./sample.R " + file_name
+                subprocess.check_call([rscript], shell = True)
 
-    ## read each file into R
-    subprocess.check_call(["./sample.R"], shell = True)
+#    filenames = find_files(folderName, suffix = ".csv")
+#    for name in filenames:
+#        print name
+
+
 
     return 0
 
-##
-def find_files(folderName, suffix=".csv" ):
-    filenames = listdir(folderName)
-    return [ filename for filename in filenames if filename.endswith( suffix ) ]
+###
+#def find_files(folderName, suffix=".csv" ):
+#    filenames = listdir(folderName)
+#    return [ filename for filename in filenames if filename.endswith( suffix ) ]
 
 
 
