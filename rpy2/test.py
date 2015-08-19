@@ -26,34 +26,29 @@
 #from os import listdir
 #import csv
 
-##from rpy2.robjects import StrVector
-##from rpy2.robjects import IntVector
-##from rpy2.robjects import FloatVector
+
 import rpy2.robjects as robjects
 from rpy2.robjects import r
 from rpy2.robjects.packages import importr
-#import rpy2.rinterface as ri
 
-#import subprocess
-
-#import rpy2.interactive as r
-#import rpy2.interactive.packages
-#import numpy as np
 
 def main():
-#    r.source("parallel_peakDetection.R")
 
+    #-------------------------------------------------------------------------#
+    # libraries in R
+    #-------------------------------------------------------------------------#
     importr('readMzXmlData')
     importr('MALDIquant')
     importr('MALDIquantForeign')
 
 
-#    filename = 'DENAMIC_Luba_24042015_nepos_16.mzXML'
-#    rcode = 'filename = paste("%s")' % (filename)
+    #-------------------------------------------------------------------------#
+    # specify the file and generate peaks in R
+    #-------------------------------------------------------------------------#
+    filename = 'DENAMIC_Luba_24042015_nepos_16.mzXML'
 
-
-    r('''
-filename = "DENAMIC_Luba_24042015_nepos_16.mzXML"
+    rcode = 'filename ="%s"' % (filename) + '\n' + \
+"""
 xml <- readMzXmlData::readMzXmlFile(filename,
                                     removeMetaData = TRUE)
 
@@ -62,122 +57,41 @@ ms <- lapply(xml, function(x){
                        x$spectrum$intensity,
                        metaData = list(name=x$metaData$file))})
 
-ms_seq = vector(mode="list", length = length(xml))
+ms_len = length(xml)
 
-if(.Platform$OS.type == "unix")
-{
+pl <- detectPeaks(ms,
+                  method="MAD", halfWindowSize=20, SNR=10,
+                  mc.cores=4)
+"""
 
-        p1 <- detectPeaks(ms,
-                          method="MAD", halfWindowSize=20, SNR=10,
-                          mc.cores=4)
-}
+    # Run script
+    r(rcode)
 
+    #-------------------------------------------------------------------------#
+    # Read data back to Python
+    #-------------------------------------------------------------------------#
 
-    '''
-    )
-#
-    r_p1 = robjects.globalenv['p1']
+    # Define the pl as the global variable, so that python can access it.
+    r_pl = robjects.globalenv['pl']
 
-    rlength = r['length']
-    print rlength(r_p1)
+    # Retension time (sampling slots)
+    pl_len = r('ms_len')
+    print pl_len
 
-    print type(r_p1)
-    print type(r_p1[0])
+    # slot id to analyze
+    sid = 0
 
+    # read from R to Python for specific fields
+    mass = r_pl[sid].do_slot("mass")
+    intensity = r_pl[sid].do_slot("intensity")
 
-    print r_p1[0].do_slot("mass")
-    print r_p1[0].do_slot("intensity")
-#    print r_p1[0].rx2("mass")
-
-#    rhead = r['head']
-#    print rhead(r_p1)
-
-#    A = np.array(list(r_p1))
-#    print A[0,]
-
-#    ri.initr()
-#    ri.SexpS4(r_p1)
-
-#    plist = list(r_p1)
-#    print type(plist)
-#    print plist[0].mass
-
-#    print r_filename
-#    print r_filename.r_repr()
-#
-#    r_xml = robjects.globalenv['xml']
-
-
-
-#    print type(r_xml)
-#    print r_xml
-#    print r_xml.r_repr()
-
-#    readMzXmlData = importr("readMzXmlData")
-#    readMzXmlData.readMzXmlFile("DENAMIC_Luba_24042015_nepos_16.mzXML",
-#                                removeMetaData = TRUE);
-
-
-
-#
-#    help_doc = utils.help("help")
-#    print help_doc[0]
-#
-#    x = IntVector(range(10))
-#    print x
-#
-#
-#
-##    str(help_doc)
-#
-##    help_where = utils.help_search("help")
-##    print tuple(help_where)
-#
-#
-#
-#    print r
-#
-#    pi  = r.pi
-#    print pi
-#    letters = r.letters;
-#    print letters
-#
-#    print r('1+2')
-#
-#    sqr = r(
-#    'function(x) x^2'
-#    )
-#    print sqr
-#
-#    print sqr(2)
-#
-#    ## using pythojn variables in R
-#    x = r.rnorm(100)
-#    r('hist (%s, xlab="x", main="hist(x)")' % x.r_repr())
-#
-#
-#    ## use R functions
-#    plot = r.plot
-#    rnorm = r.rnorm
-#    plot(rnorm(100), ylab="random")
-#
-#
-#    ## rpy2 vectors
-#    res = StrVector(['abc','def'])
-#    print res.r_repr()
-#
-#    res = FloatVector([1.1, 2.2])
-#    print res.r_repr()
-
+    print mass
+    print intensity
 
 
 
     return 0
 
-###
-#def find_files(folderName, suffix=".csv" ):
-#    filenames = listdir(folderName)
-#    return [ filename for filename in filenames if filename.endswith( suffix ) ]
 
 
 
