@@ -31,6 +31,11 @@ import rpy2.robjects as robjects
 from rpy2.robjects import r
 from rpy2.robjects.packages import importr
 
+import numpy
+
+import time
+
+
 
 def main():
 
@@ -40,6 +45,8 @@ def main():
     importr('readMzXmlData')
     importr('MALDIquant')
     importr('MALDIquantForeign')
+
+    start = time.time()
 
 
     #-------------------------------------------------------------------------#
@@ -85,8 +92,21 @@ pl <- detectPeaks(ms,
     mass = r_pl[sid].do_slot("mass")
     intensity = r_pl[sid].do_slot("intensity")
 
-    print mass
-    print intensity
+
+    mass = numpy.array(mass)
+    intensity = numpy.array(intensity)
+
+    end = time.time()
+    print end - start
+
+    print type(mass)
+    print type(intensity)
+
+
+
+
+#    print mass
+#    print intensity
 
 
 
