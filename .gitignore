@@ -30,3 +30,6 @@
 
 # csv files
 *.csv
+
+# pycharm conf files
+*.idea
