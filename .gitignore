@@ -33,3 +33,6 @@
 
 # pycharm conf files
 *.idea
+
+# Python files
+*.pyc

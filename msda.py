@@ -23,6 +23,7 @@
 
 import sys
 import os
+import util
 #from os import listdir
 #import csv
 #from rpy2.robjects import r
@@ -30,23 +31,22 @@ import subprocess
 
 def main():
 
-    if len(sys.argv) == 1:
-        print "Please specify the csv file folder."
+    if len(sys.argv) <= 3:
+        print "Usage: python msda.py input_dir output_dir file_type(csv or mzXML)"
         sys.exit()
 
-    if len(sys.argv) > 2:
-        print "Too many arguments."
-        sys.exit()
+    input_dir = sys.argv[1]
+    file_pattern = ".*" + "." + sys.argv[2]
 
-    file_dir = sys.argv[1]
-#    print file_dir
+    for file in util.find_files_with_regex(input_dir, file_pattern):
+        print file
 
-    for root, dirs, files in os.walk(file_dir, topdown=False):
-        for name in files:
-            if name.endswith(".csv"):
-                file_name = os.path.join(root, name)
-                rscript = "./sample.R " + file_name
-                subprocess.check_call([rscript], shell = True)
+    # for root, dirs, files in os.walk(file_dir, topdown=False):
+    #     for name in files:
+    #         if name.endswith(".csv"):
+    #             file_name = os.path.join(root, name)
+    #             rscript = "./sample.R " + file_name
+    #             subprocess.check_call([rscript], shell = True)
 
 #    filenames = find_files(folderName, suffix = ".csv")
 #    for name in filenames:
